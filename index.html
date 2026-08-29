@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>ThermaShift AI — Autonomous Heat-Safety Dispatching</title>
+  <meta name="description"
+    content="ThermaShift AI pulls shifts from Google Sheets, polls FortyGuard hyper-local thermal arrays, evaluates heat safety, proposes safer windows, and alerts managers for approval." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="ThermaShift AI" />
+  <meta property="og:description" content="Autonomous Heat-Safety Dispatching for Construction." />
+  <meta property="og:type" content="website" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: #F6F1E8;
+      color: #1F2328;
+    }
+
+    /* Subtle thermal contour background */
+    .thermal-bg {
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600'%3E%3Cg fill='none' stroke='%231F2328' stroke-opacity='0.05'%3E%3Cpath d='M30 120 C 160 30, 260 210, 420 120 S 700 210, 860 120'/%3E%3Cpath d='M20 240 C 170 140, 260 350, 450 240 S 720 350, 880 240'/%3E%3Cpath d='M10 360 C 190 260, 290 470, 480 360 S 740 470, 890 360'/%3E%3Cpath d='M0 480 C 210 380, 310 590, 510 480 S 760 590, 900 480'/%3E%3C/g%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 900px 600px;
+    }
+
+    /* Reveal animation */
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 520ms ease, transform 520ms ease;
+    }
+
+    .reveal-in {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      [data-reveal] {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="thermal-bg">
+  <!-- Sticky Nav -->
+  <header class="sticky top-0 z-50 border-b border-[#D8CFC2] bg-[#EFE7DB]/90 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <div class="text-sm font-semibold tracking-wide">ThermaShift AI</div>
+
+      <nav class="hidden items-center gap-5 text-sm text-[#4A4F55] md:flex">
+        <a href="#problem" class="hover:text-[#1F2328]">Problem</a>
+        <a href="#how" class="hover:text-[#1F2328]">How It Works</a>
+        <a href="#arch" class="hover:text-[#1F2328]">Architecture</a>
+        <a href="#video" class="hover:text-[#1F2328]">Demo</a>
+        <a href="#security" class="hover:text-[#1F2328]">Security</a>
+        <a href="#faq" class="hover:text-[#1F2328]">FAQ</a>
+        <a href="demo.html" class="hover:text-[#1F2328]">Demo</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a class="rounded-xl border border-[#D8CFC2] px-3 py-2 text-sm hover:bg-[#F6F1E8]" href="demo.html">Try Demo</a>
+        <a class="rounded-xl bg-[#C4512D] px-3 py-2 text-sm text-[#F6F1E8] hover:opacity-95" href="#video">Watch
+          Demo</a>
+        <a class="rounded-xl border border-[#D8CFC2] px-3 py-2 text-sm hover:bg-[#F6F1E8]"
+          href="https://github.com/REPLACE_ME/thermashift-ai" target="_blank" rel="noreferrer">View GitHub</a>
+
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4">
+    <!-- Hero -->
+    <section class="grid gap-6 py-12 md:grid-cols-2 md:py-16" data-reveal>
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight md:text-5xl">
+          Autonomous Heat-Safety Dispatching for Construction
+        </h1>
+        <p class="mt-4 max-w-prose text-base leading-relaxed text-[#4A4F55] md:text-lg">
+          ThermaShift AI pulls shifts from Google Sheets, extracts jobsite GPS from Google Maps links, polls FortyGuard
+          hyper-local thermal arrays, checks the work block against heat safety constraints, proposes safer windows, and
+          emails an executive summary for manager approval.
+        </p>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#video"
+            class="rounded-xl bg-[#C4512D] px-4 py-3 text-sm font-medium text-[#F6F1E8] hover:opacity-95">
+            Watch Loom Demo
+          </a>
+          <a href="https://github.com/REPLACE_ME/thermashift-ai" target="_blank" rel="noreferrer"
+            class="rounded-xl border border-[#D8CFC2] px-4 py-3 text-sm font-medium hover:bg-[#F6F1E8]">
+            View the Workflow on GitHub
+          </a>
+          <a href="demo.html"
+            class="rounded-xl border border-[#D8CFC2] px-4 py-3 text-sm font-medium hover:bg-[#F6F1E8]">
+            Open Demo Console
+          </a>
+          
+        </div>
+
+        <div class="mt-8 flex flex-wrap gap-2 text-xs text-[#4A4F55]">
+          <span class="rounded-full border border-[#D8CFC2] bg-[#F6F1E8]/70 px-3 py-1">Street‑level thermal
+            forecasting</span>
+          <span class="rounded-full border border-[#D8CFC2] bg-[#F6F1E8]/70 px-3 py-1">Human‑in‑the‑Loop
+            approvals</span>
+          <span class="rounded-full border border-[#D8CFC2] bg-[#F6F1E8]/70 px-3 py-1">Deterministic validation
+            layer</span>
+        </div>
+      </div>
+
+      <!-- Executive summary preview card -->
+      <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm" data-reveal>
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-semibold">Executive Summary Preview</div>
+          <div class="text-xs text-[#4A4F55]">Batch Run</div>
+        </div>
+
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="flex items-center justify-between rounded-xl border border-[#D8CFC2] bg-[#F6F1E8]/60 p-3">
+            <div>
+              <div class="font-medium">Job: Midtown Pour</div>
+              <div class="text-xs text-[#4A4F55]">08:00–16:00</div>
+            </div>
+            <span class="rounded-full bg-[#3F6B5B]/15 px-3 py-1 text-xs font-semibold text-[#3F6B5B]">SAFE</span>
+          </div>
+
+          <div class="flex items-center justify-between rounded-xl border border-[#D8CFC2] bg-[#F6F1E8]/60 p-3">
+            <div>
+              <div class="font-medium">Job: Roof Repair</div>
+              <div class="text-xs text-[#4A4F55]">12:00–18:00 → 06:00–12:00</div>
+            </div>
+            <span class="rounded-full bg-[#C4512D]/15 px-3 py-1 text-xs font-semibold text-[#C4512D]">RESCHEDULED</span>
+          </div>
+
+          <div class="flex items-center justify-between rounded-xl border border-[#D8CFC2] bg-[#F6F1E8]/60 p-3">
+            <div>
+              <div class="font-medium">Job: Road Work</div>
+              <div class="text-xs text-[#4A4F55]">10:00–14:00</div>
+            </div>
+            <span class="rounded-full bg-[#1F2328]/10 px-3 py-1 text-xs font-semibold text-[#1F2328]">ESCALATED</span>
+          </div>
+        </div>
+
+        <p class="mt-4 text-xs leading-relaxed text-[#4A4F55]">
+          Decisions are written back to the schedule source and summarized for approval.
+        </p>
+      </div>
+    </section>
+
+    <!-- Problem vs Solution -->
+    <section id="problem" class="py-10" data-reveal>
+      <h2 class="text-xl font-semibold md:text-2xl">Problem vs. Solution</h2>
+      <div class="mt-5 grid gap-4 md:grid-cols-2">
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-sm font-semibold">Manual dispatch today</div>
+          <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-[#4A4F55]">
+            <li>Guessing from city‑level forecasts</li>
+            <li>Missing jobsite heat spikes</li>
+            <li>Higher risk of OSHA violations, injuries, delays</li>
+          </ul>
+        </div>
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-sm font-semibold">ThermaShift AI</div>
+          <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-[#4A4F55]">
+            <li>Auto‑extracts GPS from Google Maps links</li>
+            <li>Hyper‑local thermal arrays (next 12–24 hours)</li>
+            <li>Reschedules to cooler windows + alerts PM for approval</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-2xl border border-[#D8CFC2] bg-[#F6F1E8]/70 p-4 text-sm text-[#4A4F55]">
+        <span class="font-semibold text-[#1F2328]">Outcome:</span>
+        reduced risk, fewer stoppages, auditable decisions.
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how" class="py-10" data-reveal>
+      <h2 class="text-xl font-semibold md:text-2xl">How It Works</h2>
+      <div class="mt-5 grid gap-4 md:grid-cols-3">
+        <!-- card -->
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-xs font-semibold text-[#4A4F55]">01</div>
+          <div class="mt-1 font-semibold">Trigger</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Pull pending shifts from Google Sheets (times + Maps link).</p>
+        </div>
+
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-xs font-semibold text-[#4A4F55]">02</div>
+          <div class="mt-1 font-semibold">Geo extraction</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Expand short link, extract exact latitude/longitude.</p>
+        </div>
+
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-xs font-semibold text-[#4A4F55]">03</div>
+          <div class="mt-1 font-semibold">Environmental polling</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Request FortyGuard thermal arrays; poll until ready.</p>
+        </div>
+
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-xs font-semibold text-[#4A4F55]">04</div>
+          <div class="mt-1 font-semibold">AI reasoning</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Groq/Llama evaluates the scheduled block and proposes safer windows.
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-xs font-semibold text-[#4A4F55]">05</div>
+          <div class="mt-1 font-semibold">Deterministic validation</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Output is forced into SAFE / RESCHEDULED / ESCALATED.</p>
+        </div>
+
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="text-xs font-semibold text-[#4A4F55]">06</div>
+          <div class="mt-1 font-semibold">Write-back + alerts</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">
+            Update the Sheet and email an executive summary to the PM.
+            <span class="font-medium text-[#1F2328]"> Manager approval is the final gate before schedule changes are
+              accepted.</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section id="arch" class="py-10" data-reveal>
+      <h2 class="text-xl font-semibold md:text-2xl">Architecture (API Usage)</h2>
+      <div class="mt-5 grid gap-4 md:grid-cols-3">
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="font-semibold">FortyGuard API</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Environmental data (hyper‑local thermal arrays).</p>
+        </div>
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="font-semibold">Groq API</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Reasoning engine (constrained LLM analysis).</p>
+        </div>
+        <div class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-5 shadow-sm">
+          <div class="font-semibold">Google Workspace</div>
+          <p class="mt-2 text-sm text-[#4A4F55]">Sheets database + Gmail alerts.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-2xl border border-[#D8CFC2] bg-[#F6F1E8]/70 p-4 text-sm text-[#4A4F55]">
+        <span class="font-semibold text-[#1F2328]">Data flow:</span>
+        Sheets → Geo Extract → FortyGuard → Groq → Validator → Sheets + Gmail
+      </div>
+    </section>
+
+    <!-- Demo video -->
+    <section id="video" class="py-10" data-reveal>
+      <h2 class="text-xl font-semibold md:text-2xl">Demo</h2>
+
+      <div class="mt-5 overflow-hidden rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] shadow-sm">
+        <div class="aspect-video">
+          <iframe class="h-full w-full" src="https://www.youtube.com/embed/aqz-KE-bpKQ"
+            title="ThermaShift AI Demo Video" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a href="https://github.com/REPLACE_ME/thermashift-ai" target="_blank" rel="noreferrer"
+          class="rounded-xl bg-[#C4512D] px-4 py-3 text-sm font-medium text-[#F6F1E8] hover:opacity-95">
+          Open GitHub Repo
+        </a>
+        <a href="https://github.com/REPLACE_ME/thermashift-ai#workflows" target="_blank" rel="noreferrer"
+          class="rounded-xl border border-[#D8CFC2] px-4 py-3 text-sm font-medium hover:bg-[#F6F1E8]">
+          Download n8n Workflow JSON
+        </a>
+      </div>
+    </section>
+
+    <!-- Security -->
+    <section id="security" class="py-10" data-reveal>
+      <h2 class="text-xl font-semibold md:text-2xl">Security & Reliability</h2>
+      <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-[#4A4F55]">
+        <li>No manual coordinate entry</li>
+        <li>Validation prevents hallucinated formats</li>
+        <li>All decisions logged back to the schedule source</li>
+        <li>
+          Human approval loop before changes are finalized.
+          <span class="font-medium text-[#1F2328]"> Manager approval is the final gate before schedule changes are
+            accepted.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-10" data-reveal>
+      <h2 class="text-xl font-semibold md:text-2xl">FAQ</h2>
+      <div class="mt-4 space-y-3">
+        <details class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-4">
+          <summary class="cursor-pointer font-semibold">Does this replace dispatchers?</summary>
+          <p class="mt-2 text-sm text-[#4A4F55]">No. It’s Human‑in‑the‑Loop: it proposes, managers approve.</p>
+        </details>
+        <details class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-4">
+          <summary class="cursor-pointer font-semibold">What data do you store?</summary>
+          <p class="mt-2 text-sm text-[#4A4F55]">Shift times, jobsite location via Maps link, and decisions written back
+            to the sheet.</p>
+        </details>
+        <details class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-4">
+          <summary class="cursor-pointer font-semibold">What if the thermal array isn’t ready yet?</summary>
+          <p class="mt-2 text-sm text-[#4A4F55]">The system polls until FortyGuard finishes processing.</p>
+        </details>
+        <details class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-4">
+          <summary class="cursor-pointer font-semibold">Can it work with other schedulers?</summary>
+          <p class="mt-2 text-sm text-[#4A4F55]">Google Sheets is used as a simple database stand‑in; the pattern is
+            adaptable.</p>
+        </details>
+        <details class="rounded-2xl border border-[#D8CFC2] bg-[#EFE7DB] p-4">
+          <summary class="cursor-pointer font-semibold">How are rules applied?</summary>
+          <p class="mt-2 text-sm text-[#4A4F55]">Constrained AI reasoning plus deterministic validation
+            (SAFE/RESCHEDULED/ESCALATED).</p>
+        </details>
+      </div>
+    </section>
+
+    <footer class="border-t border-[#D8CFC2] py-8 text-sm text-[#4A4F55]">
+      <div class="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+        <div>
+          <div class="font-semibold text-[#1F2328]">ThermaShift AI</div>
+          <div>Heat-aware dispatching that’s auditable and manager-approved.</div>
+        </div>
+        <div class="flex gap-4">
+          <a class="hover:text-[#1F2328]" href="#video">Demo</a>
+          <a class="hover:text-[#1F2328]" href="demo.html">Demo Console</a>
+          <a class="hover:text-[#1F2328]" href="https://github.com/REPLACE_ME/thermashift-ai" target="_blank"
+            rel="noreferrer">GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

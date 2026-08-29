@@ -1,0 +1,860 @@
+{
+  "name": "ThermaShift - Core Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        256
+      ],
+      "id": "680fdb37-b687-4290-9fa4-5ce962f90fca",
+      "name": "Trigger Daily Execution"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ",
+          "mode": "list",
+          "cachedResultName": "ThermaShift Dispatch Engine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Audit_Queue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Scheduled"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        256
+      ],
+      "id": "4eeb837b-6c22-462a-882c-097f66f157aa",
+      "name": "Fetch Pending Shifts",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wNRTZkoOuw9n3N0U",
+          "name": "ThermaShift Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        896,
+        256
+      ],
+      "id": "2ef531ca-3ffd-44d4-9061-a40bf8274c9c",
+      "name": "Iterate Shifts",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fortyguard.com/v1/heatmap",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"polygon_aoi\": {\n    \"type\": \"FeatureCollection\",\n    \"features\": [\n      {\n        \"type\": \"Feature\",\n        \"properties\": {},\n        \"geometry\": {\n          \"type\": \"Polygon\",\n          \"coordinates\": [\n            [\n              [{{ $json.lon - 0.005 }}, {{ $json.lat + 0.005 }}],\n              [{{ $json.lon + 0.005 }}, {{ $json.lat + 0.005 }}],\n              [{{ $json.lon + 0.005 }}, {{ $json.lat - 0.005 }}],\n              [{{ $json.lon - 0.005 }}, {{ $json.lat - 0.005 }}],\n              [{{ $json.lon - 0.005 }}, {{ $json.lat + 0.005 }}]\n            ]\n          ]\n        }\n      }\n    ]\n  },\n  \"date_time\": {\n    \"start_date\": \"{{ $('Iterate Shifts').item.json['Scheduled Start Time'].split('T')[0] }}\",\n    \"filter_type\": 3\n  },\n  \"granularity\": 60\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1568,
+        64
+      ],
+      "id": "7e6fe5c5-8ac8-4534-b227-7206f01a51a5",
+      "name": "Submit Polygon",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TIWBJPBWDgUyhwH7",
+          "name": "Fortyguard Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.fortyguard.com/v1/status/{{ $('Submit Polygon').item.json.data.activity_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2016,
+        -16
+      ],
+      "id": "ffb49fc3-c6ed-4b95-aa16-6e603144e8ad",
+      "name": "Check Status",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TIWBJPBWDgUyhwH7",
+          "name": "Fortyguard Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "01b6f642-2f15-47ca-a540-3d1e617c557d",
+              "leftValue": "={{ $json.data.status }}",
+              "rightValue": "Completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2240,
+        64
+      ],
+      "id": "94842fd1-52e1-4cb7-99bf-3eb7f6fe5bc9",
+      "name": "Is Data Ready?"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1792,
+        64
+      ],
+      "id": "e52a92b4-d7a9-44b0-bbaa-c6248ec57b6e",
+      "name": "Wait 15s",
+      "webhookId": "a3421982-eb45-4bc4-b331-363fedc50675"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const currentShift = $('Iterate Shifts').item.json;\nconst policies = $('Fetch Operating Policy').all().map(item => item.json);\n\n// Extract dynamic business hours\nlet opStart = \"05:00\";\nlet opEnd = \"22:00\";\npolicies.forEach(p => {\n  if (p['Policy Name'] === 'Operating_Day_Start') opStart = p.Value;\n  if (p['Policy Name'] === 'Operating_Day_End') opEnd = p.Value;\n});\n\n// Calculate true required duration dynamically\nconst startDt = new Date(currentShift['Scheduled Start Time']);\nconst endDt = new Date(currentShift['Scheduled End Time']);\nconst durationHours = Math.abs(endDt - startDt) / 36e5;\n\n// Use the Audit Queue for dynamic de-confliction (ignoring the current job)\nconst allShifts = $('Fetch Pending Shifts').all().map(item => item.json);\nconst otherScheduledTasks = allShifts\n  .filter(shift => shift['Job ID'] !== currentShift['Job ID'] && shift.Status !== 'Cancelled')\n  .map(shift => {\n    return {\n      job_id: shift['Job ID'],\n      location: shift['Location Name'],\n      start_time: shift['Scheduled Start Time'].includes('T') ? shift['Scheduled Start Time'].split('T')[1].substring(0, 5) : \"08:00\",\n      end_time: shift['Scheduled End Time'] && shift['Scheduled End Time'].includes('T') ? shift['Scheduled End Time'].split('T')[1].substring(0, 5) : \"16:00\"\n    };\n  });\n\n// Extract FortyGuard API Temps\nconst features = $json.data.result.map_data.features || [];\nlet totalTempC = 0;\nfeatures.forEach(f => { totalTempC += f.properties.average_temperature || 28; });\nlet avgTempF = Math.round(((features.length > 0 ? totalTempC / features.length : 28) * 9/5) + 32);\n\n// Build thermal timeline\nlet environmental_timeline = [];\nfor (let hour = parseInt(opStart.split(':')[0]); hour <= parseInt(opEnd.split(':')[0]); hour++) {\n  let heatDelta = (hour >= 12 && hour <= 16) ? 14 : (hour >= 10 && hour <= 18) ? 8 : 0;\n  let tempF = avgTempF + heatDelta;\n  let risk = (tempF >= 100) ? \"HIGH\" : (tempF >= 91) ? \"CAUTION\" : \"SAFE\";\n  environmental_timeline.push({ time: `${hour.toString().padStart(2, '0')}:00`, temp_f: tempF, risk_level: risk });\n}\n\nreturn {\n  schedulingContext: {\n    current_job: {\n      job_id: currentShift['Job ID'],\n      location: currentShift['Location Name'],\n      scheduled_start: currentShift['Scheduled Start Time'].includes('T') ? currentShift['Scheduled Start Time'].split('T')[1].substring(0, 5) : \"08:00\",\n      duration_hours: durationHours\n    },\n    business_operating_bounds: { earliest_start: opStart, latest_finish: opEnd },\n    company_active_schedule: otherScheduledTasks,\n    environmental_timeline: environmental_timeline\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        64
+      ],
+      "id": "8d529fa7-61cd-4823-a823-024c462bc882",
+      "name": "Context Builder"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json.schedulingContext) }}",
+        "options": {
+          "systemMessage": "You are the autonomous AI safety and scheduling reasoning engine for ThermaShift.\n\nYou receive:\n1. `current_job`: Shift details and required `duration_hours`.\n2. `business_operating_bounds`: Dynamic company operating hours.\n3. `company_active_schedule`: Other booked jobs today (for conflict avoidance).\n4. `environmental_timeline`: Hourly thermal risk data.\n\nRULES:\n1. HEAT SAFETY: A scheduled hour must NEVER overlap with risk_level \"HIGH\" (≥ 100°F).\n2. CALENDAR DECONFLICTION: Do not schedule over times listed in `company_active_schedule` at the same location.\n3. OPERATING BOUNDS: Must strictly fit within `business_operating_bounds`.\n4. PARTIAL SHIFT LOGIC (REAL WORLD PRIORITY): \n   - First, try to find a continuous block of time equal to `duration_hours` that satisfies Rules 1-3. \n   - If a full block is impossible due to heat/conflicts, FIND THE LONGEST POSSIBLE PARTIAL SAFE BLOCK within operating bounds (e.g., if 8 hours is impossible, but a 5-hour safe morning block exists, schedule the 5 hours). Some work is better than no work.\n   - If ZERO safe hours exist all day, output decision \"HUMAN_INTERVENTION_REQUIRED\".\n5. OUTPUT DECISION MAP:\n   - \"SAFE\": Original time works perfectly.\n   - \"RESCHEDULE_FULL\": Moved to a new full-duration window.\n   - \"RESCHEDULE_PARTIAL\": Moved to a shorter window because a full safe window doesn't exist.\n   - \"HUMAN_INTERVENTION_REQUIRED\": No safe work can be done today.\n\nRequired JSON Output Structure:\n{\n  \"decision\": \"SAFE | RESCHEDULE_FULL | RESCHEDULE_PARTIAL | HUMAN_INTERVENTION_REQUIRED\",\n  \"new_start\": \"HH:MM or null\",\n  \"new_end\": \"HH:MM or null\",\n  \"reason\": \"Explain the safety factors, conflicts avoided, or why a partial shift was chosen.\",\n  \"osha_mandates\": [\"Mandatory 15-minute rest breaks\", \"Minimum 1 quart of cool water\"]\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2912,
+        64
+      ],
+      "id": "00aa1987-1bc9-4c31-8b93-1ef40a09a8a5",
+      "name": "Scheduling Reasoner"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        288
+      ],
+      "id": "9761a94d-e817-4809-a2d0-f6fcf77b8697",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "BXHZgSwrG8LExGNg",
+          "name": "Groq API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item.json;\n\n// 1. Read dynamically from output, text, or the object directly\nlet rawText = item.output || item.text || item.message?.content || (typeof item === 'string' ? item : null);\nlet parsed = null;\n\nif (typeof item.output === 'object' && item.output !== null) {\n  parsed = item.output;\n} else if (rawText) {\n  try {\n    const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();\n    parsed = JSON.parse(cleaned);\n  } catch (err) {\n    return {\n      json: {\n        job_id: $('Iterate Shifts').item.json['Job ID'] || \"UNKNOWN\",\n        status: \"HUMAN_INTERVENTION_REQUIRED\",\n        agent_action: `🚨 PARSING ERROR: Could not parse AI response.\\n• Error: ${err.message}\\n• Raw Text: ${rawText}`\n      }\n    };\n  }\n} else if (typeof item === 'object') {\n  parsed = item;\n}\n\nif (!parsed) {\n  return {\n    json: {\n      job_id: $('Iterate Shifts').item.json['Job ID'] || \"UNKNOWN\",\n      status: \"HUMAN_INTERVENTION_REQUIRED\",\n      agent_action: \"🚨 SYSTEM ERROR: No data received from AI engine.\"\n    }\n  };\n}\n\n// 2. Extract dynamic fields produced by the model\nconst decision = (parsed.decision || parsed.status || \"\").toUpperCase().trim();\nconst reason = parsed.reason || \"\";\nconst newStart = parsed.new_start || \"\";\nconst newEnd = parsed.new_end || \"\";\n\n// 3. Extract dynamic OSHA mandates array returned by the model\nlet mandatesText = \"\";\nif (Array.isArray(parsed.osha_mandates) && parsed.osha_mandates.length > 0) {\n  mandatesText = \"\\n\\n🛡️ OSHA Mandates:\\n\" + parsed.osha_mandates.map(m => `• ${m}`).join(\"\\n\");\n}\n\nlet finalStatus = \"\";\nlet agentActionText = \"\";\n\n// 4. Pure dynamic assignment based on the model's actual decision\nif (decision === \"SAFE\") {\n  finalStatus = \"SAFE\";\n  agentActionText = `✅ SAFE (Approved as scheduled)\\n• Reason: ${reason}${mandatesText}`;\n} else if (decision.includes(\"RESCHEDULE\")) {\n  finalStatus = \"RESCHEDULED\";\n  agentActionText = `⚠️ RESCHEDULED: Operational boundary or heat risk detected.\\n• Reason: ${reason}\\n• Proposed Window: ${newStart} - ${newEnd}${mandatesText}`;\n} else {\n  finalStatus = \"HUMAN_INTERVENTION_REQUIRED\";\n  agentActionText = `🚨 ESCALATED: Requires Human Review.\\n• Decision Code: ${decision}\\n• Reason: ${reason}${mandatesText}`;\n}\n\nconst activeJobId = parsed.job_id || $('Iterate Shifts').item.json['Job ID'] || \"UNKNOWN\";\n\nreturn {\n  json: {\n    job_id: activeJobId,\n    status: finalStatus,\n    agent_action: agentActionText\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3264,
+        64
+      ],
+      "id": "5173cf93-aaa7-4444-8e9a-ecf8917d524f",
+      "name": "Deterministic Validator"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2688,
+        64
+      ],
+      "id": "fe68d859-fac1-45f8-8636-e446e121cf36",
+      "name": "Wait",
+      "webhookId": "b93d520b-8b8e-4490-8b87-19d3972aafa4"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ",
+          "mode": "list",
+          "cachedResultName": "ThermaShift Dispatch Engine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 266971962,
+          "mode": "list",
+          "cachedResultName": "Operating_Policy",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit#gid=266971962"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        256
+      ],
+      "id": "d14812c0-56ca-40c6-9116-02a9c5965ec4",
+      "name": "Fetch Operating Policy",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wNRTZkoOuw9n3N0U",
+          "name": "ThermaShift Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ready: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        256
+      ],
+      "id": "3b1ab4db-3c79-426c-97f2-d0401f9e59db",
+      "name": "Collapse Policy"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ",
+          "mode": "list",
+          "cachedResultName": "ThermaShift Dispatch Engine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Audit_Queue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Job ID": "={{ $json.job_id }}",
+            "Status": "={{ $json.status }}",
+            "Agent Action": "={{ $json.agent_action }}"
+          },
+          "matchingColumns": [
+            "Job ID"
+          ],
+          "schema": [
+            {
+              "id": "Job ID",
+              "displayName": "Job ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Location Name",
+              "displayName": "Location Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Latitude",
+              "displayName": "Latitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Longitude",
+              "displayName": "Longitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Scheduled Start Time",
+              "displayName": "Scheduled Start Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Task Type",
+              "displayName": "Task Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Agent Action",
+              "displayName": "Agent Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3488,
+        224
+      ],
+      "id": "a3434b13-53e5-4f0c-afc2-f82a07bcf701",
+      "name": "Update Audit_Queue",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wNRTZkoOuw9n3N0U",
+          "name": "ThermaShift Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['Google Maps Link'] }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        64
+      ],
+      "id": "90d995fa-26a0-4e8a-ba7e-0ed454e35b26",
+      "name": "Expand Maps Link"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Grab original link as fallback\nlet originalUrl = $('Iterate Shifts').item.json['Google Maps Link'];\nlet expandedUrl = originalUrl;\n\n// Intercept redirect location from HTTP response headers\nif ($json.headers && $json.headers.location) {\n    expandedUrl = $json.headers.location;\n}\n\n// Robust regex matching both direct coords, query parameters, and comma formats\nconst regex = /@(-?\\d+\\.\\d+),(-?\\d+\\.\\d+)|[?&]q=(-?\\d+\\.\\d+)(?:%2C|,)(-?\\d+\\.\\d+)/;\nconst match = expandedUrl.match(regex);\n\nif (!match) {\n  throw new Error(\"Could not automatically extract coordinates from this Google Maps link: \" + expandedUrl);\n}\n\nreturn {\n  lat: parseFloat(match[1] || match[3]),\n  lon: parseFloat(match[2] || match[4])\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        64
+      ],
+      "id": "c3176461-5d4c-48bf-b476-ce2052d72524",
+      "name": "Extract Coordinates"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ",
+          "mode": "list",
+          "cachedResultName": "ThermaShift Dispatch Engine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Audit_Queue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        256
+      ],
+      "id": "83faf2d6-2e1a-43ee-8791-3628c014ee51",
+      "name": "Fetch Final Report",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wNRTZkoOuw9n3N0U",
+          "name": "ThermaShift Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const shifts = $input.all().map(item => item.json);\n\nlet escalatedCount = 0;\nlet safeCount = 0;\nlet tableRows = '';\n\nshifts.forEach(shift => {\n  if (!shift['Job ID']) return; \n  \n  const status = shift['Status'] || 'UNKNOWN';\n  let statusColor = status.includes('SAFE') ? '#10b981' : (status.includes('RESCHEDULED') ? '#f59e0b' : '#ef4444');\n  \n  if (status.includes('SAFE')) safeCount++;\n  else escalatedCount++;\n\n  // Clean and format the AI's detailed reasoning\n  let rawAction = shift['Agent Action'] || 'No additional details provided.';\n  let agentAction = rawAction.replace(/\\n/g, '<br>');\n\n  tableRows += `\n    <tr>\n      <td style=\"padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top;\"><strong>${shift['Job ID']}</strong></td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top;\">${shift['Location Name']}</td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top;\">\n        <span style=\"color: ${statusColor}; font-weight: bold; font-size: 14px;\">${status}</span>\n        <div style=\"margin-top: 8px; font-size: 13px; color: #4b5563; background-color: #f9fafb; padding: 10px; border-radius: 6px; border-left: 4px solid ${statusColor};\">\n          ${agentAction}\n        </div>\n      </td>\n    </tr>\n  `;\n});\n\nconst emailHTML = `\n  <div style=\"font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #1f2937;\">\n    <h2 style=\"color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;\">ThermaShift AI - Daily Dispatch Summary</h2>\n    <p><strong>Prepared for Dispatcher:</strong> Shahrukh Karim</p>\n    <p>The autonomous scheduling engine has completed the daily thermal audit. Below is the executive summary of all active shifts.</p>\n    \n    <div style=\"background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;\">\n      <h3 style=\"margin-top: 0; color: #111827;\">System Overview:</h3>\n      <ul style=\"margin-bottom: 0;\">\n        <li><strong>Total Shifts Analyzed:</strong> ${shifts.length}</li>\n        <li><strong>✅ Cleared for Safe Operations:</strong> ${safeCount}</li>\n        <li><strong>🚨 Flagged for Review (Escalated/Rescheduled):</strong> ${escalatedCount}</li>\n      </ul>\n    </div>\n\n    <table style=\"width: 100%; border-collapse: collapse; text-align: left;\">\n      <thead>\n        <tr style=\"background-color: #f8fafc;\">\n          <th style=\"padding: 10px 12px; border-bottom: 2px solid #cbd5e1; width: 15%;\">Job ID</th>\n          <th style=\"padding: 10px 12px; border-bottom: 2px solid #cbd5e1; width: 30%;\">Location</th>\n          <th style=\"padding: 10px 12px; border-bottom: 2px solid #cbd5e1; width: 55%;\">AI Decision & Actions</th>\n        </tr>\n      </thead>\n      <tbody>\n        ${tableRows}\n      </tbody>\n    </table>\n    \n    <p style=\"font-size: 12px; color: #6b7280; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 10px;\">\n      Automated message generated by ThermaShift AI Engine. Do not reply.\n    </p>\n  </div>\n`;\n\nreturn [{ json: { html_body: emailHTML, subject: `🚨 ThermaShift Dispatch Summary (${safeCount} Safe, ${escalatedCount} Flagged)` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        256
+      ],
+      "id": "e84b9235-258f-42be-b19b-9546121c0a07",
+      "name": "Format Email Report"
+    },
+    {
+      "parameters": {
+        "sendTo": "shahrukhkknmd@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html_body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        256
+      ],
+      "id": "b8d1e5fe-44ed-4d70-adbf-cbea98879fb6",
+      "name": "Send Executive Alert",
+      "webhookId": "30316001-2e18-4e62-8b46-09d9ca129215",
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "umtlssIAcp12iFqI",
+          "name": "ThermaShift Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Phase 1: Ingestion & Rules Engine\n",
+        "height": 352,
+        "width": 912,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        144
+      ],
+      "id": "39d86f0c-7cb1-4394-8371-80d972605d12",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Phase 2: Autonomous Geocoding & API",
+        "height": 288,
+        "width": 1376,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -64
+      ],
+      "id": "e0ad4c1b-2099-4ec3-83a6-34cee8290e65",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Phase 3: AI Engine & DB Sync\n",
+        "height": 592,
+        "width": 1248,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2448,
+        -96
+      ],
+      "id": "e77abd11-6476-44bb-b03b-f0e59ff48c41",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n## Phase 4: Executive Reporting",
+        "height": 272,
+        "width": 1008
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        848,
+        240
+      ],
+      "id": "6c1ba4af-78f2-45a9-b98b-4e7b14a81258",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Daily Execution": {
+      "main": [
+        [
+          {
+            "node": "Fetch Operating Policy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Shifts": {
+      "main": [
+        [
+          {
+            "node": "Iterate Shifts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iterate Shifts": {
+      "main": [
+        [
+          {
+            "node": "Fetch Final Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Expand Maps Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit Polygon": {
+      "main": [
+        [
+          {
+            "node": "Wait 15s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Is Data Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Data Ready?": {
+      "main": [
+        [
+          {
+            "node": "Context Builder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 15s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15s": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context Builder": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Scheduling Reasoner",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scheduling Reasoner": {
+      "main": [
+        [
+          {
+            "node": "Deterministic Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Scheduling Reasoner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deterministic Validator": {
+      "main": [
+        [
+          {
+            "node": "Update Audit_Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Operating Policy": {
+      "main": [
+        [
+          {
+            "node": "Collapse Policy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Policy": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Shifts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Audit_Queue": {
+      "main": [
+        [
+          {
+            "node": "Iterate Shifts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Maps Link": {
+      "main": [
+        [
+          {
+            "node": "Extract Coordinates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Coordinates": {
+      "main": [
+        [
+          {
+            "node": "Submit Polygon",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Final Report": {
+      "main": [
+        [
+          {
+            "node": "Format Email Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email Report": {
+      "main": [
+        [
+          {
+            "node": "Send Executive Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "GeYa8KdxerFopq0b2GqP-"
+  },
+  "versionId": "9797f030-860c-48b6-a4c9-f4a89da8671c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "05561d0d313c9233431f25e2ab83dcc7bac840f7b3e4dafc80806b3cd1b8e198"
+  },
+  "id": "CQK7OLdjOku4eS2yn1bjR",
+  "tags": [
+    {
+      "updatedAt": "2026-08-26T13:20:41.415Z",
+      "createdAt": "2026-08-26T13:20:41.415Z",
+      "id": "pa9hGc7a4xsU4ThE",
+      "name": "ThermaShift"
+    }
+  ]
+}

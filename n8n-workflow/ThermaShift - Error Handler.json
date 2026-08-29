@@ -1,0 +1,72 @@
+{
+  "name": "ThermaShift - Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "558544ac-042e-4d9f-a94c-40652a34314f",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "shahrukhkknmd@gmail.com",
+        "subject": "🚨 CRITICAL FAILURE: ThermaShift Engine Halted",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #ef4444; border-radius: 8px; padding: 20px;\">\n  <h2 style=\"color: #ef4444; margin-top: 0;\">🚨 System Crash Detected</h2>\n  <p>The ThermaShift autonomous scheduling engine encountered a fatal error and halted execution. No further shifts will be processed until this is resolved.</p>\n  \n  <div style=\"background-color: #fef2f2; padding: 15px; border-radius: 5px; margin: 20px 0;\">\n    <ul style=\"margin: 0; padding-left: 20px; color: #991b1b;\">\n      <li style=\"margin-bottom: 8px;\"><strong>Failing Workflow:</strong> {{ $json.workflow.name }}</li>\n      <li style=\"margin-bottom: 8px;\"><strong>Node that Crashed:</strong> {{ $json.execution.lastNodeExecuted }}</li>\n      <li style=\"margin-bottom: 8px;\"><strong>Error Details:</strong> {{ $json.execution.error.message }}</li>\n      <li><strong>Execution ID:</strong> {{ $json.execution.id }}</li>\n    </ul>\n  </div>\n\n  <p style=\"font-size: 14px; color: #4b5563;\">Action Required: Open your n8n instance, navigate to Executions, and search for the Execution ID listed above to view the exact failure point.</p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "04d1c237-9dd0-46d6-ab9b-246075c6fd48",
+      "name": "Dispatch Crash Alert",
+      "webhookId": "87d04cdd-8c3e-422a-9922-ee07fd6ab80b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "umtlssIAcp12iFqI",
+          "name": "ThermaShift Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Crash Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b8af23e0-c5e3-49e4-ab89-c7569f3d7851",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "05561d0d313c9233431f25e2ab83dcc7bac840f7b3e4dafc80806b3cd1b8e198"
+  },
+  "id": "GeYa8KdxerFopq0b2GqP-",
+  "tags": [
+    {
+      "updatedAt": "2026-08-26T13:20:41.415Z",
+      "createdAt": "2026-08-26T13:20:41.415Z",
+      "id": "pa9hGc7a4xsU4ThE",
+      "name": "ThermaShift"
+    }
+  ]
+}
