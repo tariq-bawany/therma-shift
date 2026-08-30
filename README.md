@@ -82,11 +82,11 @@ where each one is answered:
 
 | Criterion | How ThermaShift answers it | Where to look |
 |---|---|---|
-| 🚀 **Innovation** | Not another heat *dashboard* — an **agentic dispatcher** that closes the loop: read schedule → locate jobsite → pull thermal data → reason → propose → write back → escalate. **Partial-shift logic** is the non-obvious bit: instead of cancelling a day, it finds the longest safe productive block ("some work beats no work"). | [§2 Solution](#2-the-solution) · [§6 Decision engine](#6-the-decision-engine) |
-| 🔧 **Technical Quality** — *incl. use of the FortyGuard API* | Correct use of the **async** FortyGuard contract: `POST /v1/heatmap` → `activity_id` → 15 s poll of `GET /v1/status/{id}`. Polygons are generated per jobsite (±0.005°), with the shift's own date, at `granularity: 60`. A **deterministic validator** means the LLM can't corrupt the schedule, and **sheet-driven policy** means rules are data, not code. | [§5 FortyGuard API usage](#5-fortyguard-api-usage) · [§6](#6-the-decision-engine) · [§11 Reliability](#11-reliability--security) |
-| 💼 **Business Viability** | Targets the sector with the **largest share of occupational heat deaths (36.8 %)**, where a federal heat standard is shifting employers to documented *pre-shift* planning. Zero retraining (dispatchers keep their spreadsheet), and the compliance artefact is a byproduct. | [§1 Problem](#1-the-problem) · [§13 Impact](#13-impact--business-viability) |
-| 🎤 **Presentation** | One README, end to end: problem with citations → architecture diagrams → decision contract → **15-minute self-host guide** with a credential matrix, a URL/ID replacement table, and a troubleshooting table. Honest limitations + roadmap. | This file · [§10 Self-host](#10-self-host-the-n8n-workflow) · [§14–15](#14-known-limitations) |
-| 🌡️ **FortyGuard API usage** *(required artefact)* | Both endpoints documented with request/response shapes, header-auth setup, the polling loop, and the °C → °F → risk-band transformation that turns 20 m² cells into a safety decision. | [§5 FortyGuard API usage](#5-fortyguard-api-usage) |
+| 🚀 **Innovation** | Not another heat *dashboard* — an **agentic dispatcher** that closes the loop: read schedule → locate jobsite → pull thermal data → reason → propose → write back → escalate. **Partial-shift logic** is the non-obvious bit: instead of cancelling a day, it finds the longest safe productive block ("some work beats no work"). | [2 Solution](#2-the-solution) · [6 Decision engine](#6-the-decision-engine) |
+| 🔧 **Technical Quality** — *incl. use of the FortyGuard API* | Correct use of the **async** FortyGuard contract: `POST /v1/heatmap` → `activity_id` → 15 s poll of `GET /v1/status/{id}`. Polygons are generated per jobsite (±0.005°), with the shift's own date, at `granularity: 60`. A **deterministic validator** means the LLM can't corrupt the schedule, and **sheet-driven policy** means rules are data, not code. | [5 FortyGuard API usage](#5-fortyguard-api-usage) · [6](#6-the-decision-engine) · [11 Reliability](#11-reliability--security) |
+| 💼 **Business Viability** | Targets the sector with the **largest share of occupational heat deaths (36.8 %)**, where a federal heat standard is shifting employers to documented *pre-shift* planning. Zero retraining (dispatchers keep their spreadsheet), and the compliance artefact is a byproduct. | [1 Problem](#1-the-problem) · [13 Impact](#13-impact--business-viability) |
+| 🎤 **Presentation** | One README, end to end: problem with citations → architecture diagrams → decision contract → **15-minute self-host guide** with a credential matrix, a URL/ID replacement table, and a troubleshooting table. Honest limitations + roadmap. | This file · [10 Self-host](#10-self-host-the-n8n-workflow) · [14–15](#14-known-limitations) |
+| 🌡️ **FortyGuard API usage** *(required artefact)* | Both endpoints documented with request/response shapes, header-auth setup, the polling loop, and the °C → °F → risk-band transformation that turns 20 m² cells into a safety decision. | [5 FortyGuard API usage](#5-fortyguard-api-usage) |
 
 **Track fit:** **Agentic AI** (autonomous reasoning + tool use + human escalation) · **Industrial &
 Enterprise** (operational safety) · *adjacent:* Resilient Cities & Infrastructure.
@@ -170,7 +170,7 @@ flowchart LR
     E --> F["🤖 Groq reasoner<br/>constrained JSON only"]
     F --> G["🛡️ Deterministic Validator<br/>3 legal states"]
     G --> H["📝 Write back to Sheet"]
-    H --> I["📧 Executive summary email"]
+    H --> I["📧 Executive summary<br/>email"]
     style C fill:#C4512D,stroke:#C4512D,color:#fff
     style G fill:#3F6B5B,stroke:#3F6B5B,color:#fff
 ```
@@ -492,7 +492,7 @@ Run the entire engine on your own n8n instance in ~15 minutes.
 | **FortyGuard API key** | Free access + trial credits via the [hackathon](https://www.fortyguard.com/hackathon26) or [API plans](https://www.fortyguard.com/api-pricing) |
 | **Groq API key** | Free tier at [console.groq.com](https://console.groq.com/keys) |
 | **Google Cloud project** | With the **Google Sheets API** *and* **Gmail API** enabled |
-| **Google Sheet** | Two tabs, per [§7](#7-google-sheet-schema) |
+| **Google Sheet** | Two tabs, per [7](#7-google-sheet-schema) |
 
 ---
 
@@ -636,14 +636,15 @@ Verify it: temporarily break a node (e.g. an invalid sheet ID) and run — you s
 ThermaShift is deliberately **advisory**. It proposes; a manager disposes.
 
 ```
-Audited verdicts  ──▶  Executive summary email  ──▶  👷 Manager approves  ──▶  Crew notified
-   (engine)                  (with rationale)            (human gate)           (action)
+Audited verdicts  ──▶  Executive summary email  ──▶  👷 Manager approves  
+   (engine)                  (with rationale)            (human gate)      
 ```
 
-- Every proposal carries a **plain-language reason** and the OSHA controls that apply to it.
-- `HUMAN_INTERVENTION_REQUIRED` rows are never auto-resolved — they surface a situation a human must own.
-- The schedule's source of truth stays human-editable; the engine writes *recommendations* into
-  `Agent Action`, not an irreversible mutation of the plan.
+
+- Every proposal includes a **plain-language reason** and the OSHA controls/mandates returned by the reasoner.
+- `HUMAN_INTERVENTION_REQUIRED` items are never auto-resolved — they explicitly surface situations that require a human decision.
+- The **Google Sheet remains the source of truth**. The engine writes outcomes and recommendations into `Status` + `Agent Action`, and the manager uses that email + sheet to approve the final plan.
+- **No automatic crew notification is performed by this project**; manager approval is the final gate before operational changes are acted on.
 
 ---
 
