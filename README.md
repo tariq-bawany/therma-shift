@@ -39,8 +39,8 @@ an executive summary for a human manager to approve.
 | [9. Run the site locally](#9-run-the-site-locally) | [10. Self-host the n8n workflow](#10-self-host-the-n8n-workflow) |
 | [11. Reliability & security](#11-reliability--security) | [12. Human-in-the-loop](#12-human-in-the-loop) |
 | [13. Impact & business viability](#13-impact--business-viability) | [14. Known limitations](#14-known-limitations) |
-| [15. Roadmap](#15-roadmap) | [16. Team](#16-team) |
-| [17. Pre-submission checklist](#17-pre-submission-checklist) | [18. Acknowledgements & license](#18-acknowledgements--license) |
+| [15. Roadmap](#15-roadmap) | [16. Acknowledgements & license](#18-acknowledgements--license) |
+
 
 ---
 
@@ -1491,36 +1491,10 @@ Stating these plainly — a judge will find them anyway, and honesty scores bett
 |---|---|---|
 | 1 | Native hourly forecast from FortyGuard instead of the diurnal heuristic | True hour-by-hour optimisation |
 | 2 | Blend humidity / WBGT into the risk bands | Physiologically accurate thresholds |
-| 3 | One-click **Approve / Reject** in the email → webhook write-back | Closes the human-in-the-loop loop |
-| 4 | Procore / Primavera / Postgres connectors | Enterprise-scale scheduling |
-| 5 | Multi-day, multi-crew global optimiser | Minimal lost hours across a week |
-| 6 | SMS / WhatsApp escalation for `HIGH` risk | Reaches crews without email |
-| 7 | Per-worker acclimatisation & role weighting | Personalised risk, per [NIOSH guidance](https://www.cdc.gov/niosh/bulletin/2020/heat-stress-construction.html) |
-
+| 3 | One-click **Approve / Reject** after the email | Closes the human-in-the-loop loop |
 ---
 
-## 16. Pre-submission checklist
-
-The hackathon requires: **working demo · repo link · 2–5 min video · written summary · documentation of
-FortyGuard API usage** [2](https://www.fortyguard.com/hackathon26). Submissions close **Aug 30, 2026,
-11:59 PM GST**.
-
-- [ ] **Fill the `<!-- TODO -->` placeholders** — team table, live demo URLs, sheet link, impact estimates
-- [ ] **Record the 2–5 min video** and replace the YouTube ID in `index.html` (`aqz-KE-bpKQ`) and the demo link here
-- [ ] **Unify the status label.** The engine writes `HUMAN_INTERVENTION_REQUIRED`; the landing page and demo
-      console both say `ESCALATED`. Pick one and make all three consistent.
-- [ ] **Fix the hero button copy.** `index.html` says *"Watch Loom Demo"* but embeds a YouTube video.
-- [ ] **Replace `assets/n8n-workflow.jpeg`** if the canvas changed since the last run
-- [ ] **Set `Trigger Daily Execution`** (it ships empty) and confirm the workflow is **Active**
-- [ ] **Re-select the Error Workflow** after import (see [Step 4](#step-4--wire-the-error-workflow-))
-- [ ] **Share the demo Google Sheet** as view-only so judges can watch it update
-- [ ] **Run the workflow once end-to-end** and screenshot the result for the submission form
-- [ ] **Add a `LICENSE` file** (MIT badge already links to one) and a `.gitignore`
-- [ ] **Publish the site** via GitHub Pages and paste the live URL in the badges/links above
-
----
-
-## 17. Acknowledgements & license
+## 16. Acknowledgements & license
 
 - **FortyGuard** — for the [Temperature API](https://www.fortyguard.com/products) and the
   [Hackathon '26](https://www.fortyguard.com/hackathon26). Hyper-local temperature data measured 2 m above
@@ -1530,7 +1504,6 @@ FortyGuard API usage** [2](https://www.fortyguard.com/hackathon26). Submissions 
 - **Google Workspace** — Sheets + Gmail.
 - **NIOSH / OSHA / CPWR** — for the public heat-stress surveillance data cited above.
 
-Released under the **MIT License** — see [`LICENSE`](LICENSE).
 
 <div align="center">
 
