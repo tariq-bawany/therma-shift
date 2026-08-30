@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-label="ThermaShift AI — autonomous heat-safety dispatching">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#11141A"/>
+      <stop offset="55%" stop-color="#171B22"/>
+      <stop offset="100%" stop-color="#241A17"/>
+    </linearGradient>
+    <radialGradient id="ember" cx="12%" cy="100%" r="70%">
+      <stop offset="0%" stop-color="#C4512D" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#C4512D" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C4512D"/>
+      <stop offset="55%" stop-color="#E0A23C" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#F6F1E8" stop-opacity="0.08"/>
+    </linearGradient>
+    <g id="cell0"><rect width="34" height="34" rx="7"/></g>
+  </defs>
+
+  <!-- background -->
+  <rect width="1280" height="340" fill="url(#bg)"/>
+  <rect width="1280" height="340" fill="url(#ember)"/>
+
+  <!-- thermal contour lines -->
+  <g fill="none" stroke="#F6F1E8" stroke-opacity="0.055" stroke-width="1.4">
+    <path d="M-20 300 C 180 190, 320 360, 560 250 S 900 360, 1300 220"/>
+    <path d="M-20 250 C 200 140, 340 310, 580 200 S 920 310, 1300 170"/>
+    <path d="M-20 200 C 220 90, 360 260, 600 150 S 940 260, 1300 120"/>
+    <path d="M-20 150 C 240 40, 380 210, 620 100 S 960 210, 1300 70"/>
+    <path d="M-20 100 C 260 -10, 400 160, 640 50 S 980 160, 1300 20"/>
+  </g>
+
+  <!-- title -->
+  <text x="72" y="132" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="72" font-weight="700" fill="#F6F1E8" letter-spacing="-1.5">ThermaShift <tspan fill="#FF7A45">AI</tspan></text>
+
+  <!-- tagline -->
+  <text x="74" y="176" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#9AA3AF">Autonomous heat-safety dispatching for construction crews</text>
+
+  <!-- rule -->
+  <rect x="74" y="204" width="300" height="3" rx="1.5" fill="url(#rule)"/>
+
+  <!-- chips -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="600">
+    <g transform="translate(74,232)">
+      <rect width="252" height="34" rx="17" fill="#C4512D" fill-opacity="0.14" stroke="#C4512D" stroke-opacity="0.55"/>
+      <circle cx="18" cy="17" r="4.5" fill="#FF7A45"/>
+      <text x="32" y="22" fill="#F7C6B4">FortyGuard Temperature API</text>
+    </g>
+    <g transform="translate(340,232)">
+      <rect width="112" height="34" rx="17" fill="#F6F1E8" fill-opacity="0.05" stroke="#F6F1E8" stroke-opacity="0.16"/>
+      <text x="18" y="22" fill="#C3CAD4">n8n engine</text>
+    </g>
+    <g transform="translate(466,232)">
+      <rect width="150" height="34" rx="17" fill="#F6F1E8" fill-opacity="0.05" stroke="#F6F1E8" stroke-opacity="0.16"/>
+      <text x="18" y="22" fill="#C3CAD4">Groq reasoning</text>
+    </g>
+    <g transform="translate(630,232)">
+      <rect width="186" height="34" rx="17" fill="#F6F1E8" fill-opacity="0.05" stroke="#F6F1E8" stroke-opacity="0.16"/>
+      <text x="18" y="22" fill="#C3CAD4">Human-in-the-Loop</text>
+    </g>
+  </g>
+
+  <!-- footer line -->
+  <text x="74" y="308" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13.5" fill="#6C7580">20 m² hyperlocal resolution  ·  2 m above ground  ·  Street-level thermal intelligence</text>
+
+  <!-- thermal grid (right) -->
+  <g transform="translate(880,86)">
+    <g id="grid">
+      <g transform="translate(0,0)">
+        <rect width="34" height="34" rx="7" fill="#3F6B5B" fill-opacity="0.55"/>
+        <rect x="42" width="34" height="34" rx="7" fill="#3F6B5B" fill-opacity="0.62"/>
+        <rect x="84" width="34" height="34" rx="7" fill="#4F7A52" fill-opacity="0.7"/>
+        <rect x="126" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.72"/>
+        <rect x="168" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.78"/>
+        <rect x="210" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.85"/>
+        <rect x="252" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.9"/>
+        <rect x="294" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.7"/>
+      </g>
+      <g transform="translate(0,42)">
+        <rect width="34" height="34" rx="7" fill="#3F6B5B" fill-opacity="0.6"/>
+        <rect x="42" width="34" height="34" rx="7" fill="#4F7A52" fill-opacity="0.68"/>
+        <rect x="84" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.75"/>
+        <rect x="126" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.8"/>
+        <rect x="168" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.88"/>
+        <rect x="210" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.95"/>
+        <rect x="252" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.88"/>
+        <rect x="294" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.72"/>
+      </g>
+      <g transform="translate(0,84)">
+        <rect width="34" height="34" rx="7" fill="#4F7A52" fill-opacity="0.62"/>
+        <rect x="42" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.7"/>
+        <rect x="84" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.78"/>
+        <rect x="126" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.85"/>
+        <rect x="168" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.92"/>
+        <rect x="210" width="34" height="34" rx="7" fill="#E0532A" fill-opacity="0.95"/>
+        <rect x="252" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.85"/>
+        <rect x="294" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.7"/>
+      </g>
+      <g transform="translate(0,126)">
+        <rect width="34" height="34" rx="7" fill="#3F6B5B" fill-opacity="0.6"/>
+        <rect x="42" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.68"/>
+        <rect x="84" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.75"/>
+        <rect x="126" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.82"/>
+        <rect x="168" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.88"/>
+        <rect x="210" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.85"/>
+        <rect x="252" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.75"/>
+        <rect x="294" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.65"/>
+      </g>
+      <g transform="translate(0,168)">
+        <rect width="34" height="34" rx="7" fill="#3F6B5B" fill-opacity="0.55"/>
+        <rect x="42" width="34" height="34" rx="7" fill="#4F7A52" fill-opacity="0.6"/>
+        <rect x="84" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.66"/>
+        <rect x="126" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.72"/>
+        <rect x="168" width="34" height="34" rx="7" fill="#C4512D" fill-opacity="0.8"/>
+        <rect x="210" width="34" height="34" rx="7" fill="#C08A38" fill-opacity="0.74"/>
+        <rect x="252" width="34" height="34" rx="7" fill="#8C8A44" fill-opacity="0.66"/>
+        <rect x="294" width="34" height="34" rx="7" fill="#4F7A52" fill-opacity="0.6"/>
+      </g>
+    </g>
+
+    <!-- jobsite pin on the hot cell -->
+    <g transform="translate(210,84)">
+      <rect x="-3" y="-3" width="40" height="40" rx="9" fill="none" stroke="#F6F1E8" stroke-width="2.2" stroke-opacity="0.95"/>
+      <circle cx="17" cy="17" r="4" fill="#F6F1E8"/>
+    </g>
+
+    <!-- legend -->
+    <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8A939F">
+      <rect x="0" y="228" width="14" height="14" rx="4" fill="#3F6B5B"/>
+      <text x="22" y="240">SAFE</text>
+      <rect x="82" y="228" width="14" height="14" rx="4" fill="#C08A38"/>
+      <text x="104" y="240">CAUTION ≥91°F</text>
+      <rect x="216" y="228" width="14" height="14" rx="4" fill="#C4512D"/>
+      <text x="238" y="240">HIGH ≥100°F</text>
+    </g>
+  </g>
+</svg>
