@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       fetch(`${workerUrl}?email=${encodeURIComponent(email)}`);
 
-      alert("Audit dispatched! Check your inbox and the Google Sheet in 60-90 seconds.");
+      alert("Audit dispatched! Wait for a while, then Check your inbox and the Google Sheet.");
     });
   }
 });
