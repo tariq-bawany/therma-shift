@@ -53,8 +53,8 @@ an executive summary for a human manager to approve.
 | Artefact | Link |
 |---|---|
 | 🎥 **Video walkthrough (2–5 min)** | [https://www.loom.com/share/fcff253533f842fb93d3d4b329ad7dba](https://www.loom.com/share/fcff253533f842fb93d3d4b329ad7dba) |
-| 🌐 **Landing page** | `https://tariq-bawany.github.io/therma-shift/` <!-- TODO: confirm after enabling GitHub Pages --> |
-| 🎛️ **Demo console** | `https://tariq-bawany.github.io/therma-shift/demo.html` <!-- TODO: confirm after enabling GitHub Pages --> |
+| 🌐 **Landing page** | [https://therma-shift.netlify.app/](https://therma-shift.netlify.app/)  |
+| 🎛️ **Demo console** | [https://therma-shift.netlify.app/demo](https://therma-shift.netlify.app/demo)  |
 | 📊 **Live demo Google Sheet** | https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit |
 | ⚙️ **n8n workflow JSON** | [`n8n-workflow/ThermaShift - Core Engine.json`](n8n-workflow/ThermaShift%20-%20Core%20Engine.json) |
 
