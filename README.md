@@ -58,17 +58,17 @@ an executive summary for a human manager to approve.
 | 📊 **Live demo Google Sheet** | https://docs.google.com/spreadsheets/d/1fRMSlOQZbsYxlQh7mt7JIJv4-Mysr_SWPBtLGiEOkAQ/edit |
 | ⚙️ **n8n workflow JSON** | [`n8n-workflow/ThermaShift - Core Engine.json`](n8n-workflow/ThermaShift%20-%20Core%20Engine.json) |
 
-**The 90-second version of what to look for**
+**The 120-second version of what to look for**
 
-1. Open the **Google Sheet** — three jobs, all `Scheduled` (one morning, one midday rooftop, one roadwork).
-2. Trigger a run from the **demo console** (or press *Execute Workflow* in n8n).
-3. Wait ~60–90 s and refresh the sheet:
-   - `TC-01` (08:00–16:00, cooler hours) → **SAFE**
-   - `TC-02` (12:00–18:00, exposed roof) → **RESCHEDULED** with a proposed cooler window
-   - The roadwork job → **RESCHEDULED / HUMAN_INTERVENTION_REQUIRED** with the reason stated
-4. Open the **executive summary email** — one table, colour-coded statuses, reasoning and OSHA mandates.
-5. *Bonus:* change `Operating_Day_End` from `22:00` to `14:00` in `Operating_Policy`, re-run, and watch
-   every proposal immediately respect the new business rule.
+1. Open the **Google Sheet** — rows in `Audit_Queue` marked `Scheduled` are the inputs.
+2. Open the **demo console** and enter your email → click **Run Autonomous Dispatch Audit**.
+3. Wait for 2-3 mins, then refresh the **Google Sheet**:
+   - Cool-site job (e.g., `TC-01`) typically remains **SAFE**
+   - Extreme-heat job (e.g., `TC-02`) typically becomes **RESCHEDULED** with a proposed safer window written into `Agent Action`
+   - Borderline cases may become **RESCHEDULED** or **HUMAN_INTERVENTION_REQUIRED** with a clear reason
+4. Check your inbox — the executive summary email is the **manager approval** artifact (color-coded + rationale + mandates).
+5. *Bonus (policy is data, not code):* In the **Google Sheet** tab `Operating_Policy`, change `Operating_Day_End` from `22:00` to `14:00`,
+   re-run the audit, and verify proposals immediately respect the new operating bound.
 
 ---
 
@@ -82,7 +82,7 @@ where each one is answered:
 
 | Criterion | How ThermaShift answers it | Where to look |
 |---|---|---|
-| 🚀 **Innovation** | Not another heat *dashboard* — an **agentic dispatcher** that closes the loop: read schedule → locate jobsite → pull thermal data → reason → propose → write back → escalate. **Partial-shift logic** is the non-obvious bit: instead of cancelling a day, it finds the longest safe productive block ("some work beats no work"). | [2 Solution](#2-the-solution) · [6 Decision engine](#6-the-decision-engine) |
+| 🚀 **Innovation** | Not another heat *dashboard* — an **agentic dispatcher** that closes the loop: read schedule → locate jobsite → pull thermal data → reason → propose → write back → flag for human review (HUMAN_INTERVENTION_REQUIRED). **Partial-shift logic** is the non-obvious bit: instead of cancelling a day, it finds the longest safe productive block ("some work beats no work"). | [2 Solution](#2-the-solution) · [6 Decision engine](#6-the-decision-engine) |
 | 🔧 **Technical Quality** — *incl. use of the FortyGuard API* | Correct use of the **async** FortyGuard contract: `POST /v1/heatmap` → `activity_id` → 15 s poll of `GET /v1/status/{id}`. Polygons are generated per jobsite (±0.005°), with the shift's own date, at `granularity: 60`. A **deterministic validator** means the LLM can't corrupt the schedule, and **sheet-driven policy** means rules are data, not code. | [5 FortyGuard API usage](#5-fortyguard-api-usage) · [6](#6-the-decision-engine) · [11 Reliability](#11-reliability--security) |
 | 💼 **Business Viability** | Targets the sector with the **largest share of occupational heat deaths (36.8 %)**, where a federal heat standard is shifting employers to documented *pre-shift* planning. Zero retraining (dispatchers keep their spreadsheet), and the compliance artefact is a byproduct. | [1 Problem](#1-the-problem) · [13 Impact](#13-impact--business-viability) |
 | 🎤 **Presentation** | One README, end to end: problem with citations → architecture diagrams → decision contract → **15-minute self-host guide** with a credential matrix, a URL/ID replacement table, and a troubleshooting table. Honest limitations + roadmap. | This file · [10 Self-host](#10-self-host-the-n8n-workflow) · [14–15](#14-known-limitations) |
@@ -140,7 +140,7 @@ anyone clocks in.
 | Rules hardcoded in a spreadsheet nobody opens | **Business rules live in the sheet itself** (`Operating_Policy`) and are re-read every run |
 | "It feels hot, let's start at 5 a.m." | **Reasoned decision** across heat risk, operating bounds, and calendar conflicts |
 | Free-text LLM output you can't trust in production | **Deterministic validator** collapses every response into exactly three machine-readable states |
-| Decisions live in someone's head | **Every verdict written back** to the schedule with a plain-language rationale + OSHA mandates |
+| Decisions live in someone’s head | **Every verdict written back** to the Google Sheet (Status + Agent Action) with a plain-language rationale + OSHA mandates for manager approval |
 | Silence when the pipeline breaks | **Dedicated error workflow** that emails the crash, node, and execution ID |
 
 ### What makes it more than "an LLM wrapper"
@@ -169,8 +169,8 @@ flowchart LR
     D --> E["🧠 Context Builder<br/>thermal timeline + policy + conflicts"]
     E --> F["🤖 Groq reasoner<br/>constrained JSON only"]
     F --> G["🛡️ Deterministic Validator<br/>3 legal states"]
-    G --> H["📝 Write back to Sheet"]
-    H --> I["📧 Executive summary<br/>email"]
+    G --> H["📝 Write back to Google Sheet<br/>(Status + Agent Action)"]
+    H --> I["📧 Executive summary email<br/>(manager approval)"]
     style C fill:#C4512D,stroke:#C4512D,color:#fff
     style G fill:#3F6B5B,stroke:#3F6B5B,color:#fff
 ```
@@ -661,7 +661,7 @@ logistics yards.
 
 | Driver | Mechanism |
 |---|---|
-| **Fewer incidents** | Shifts are moved *before* exposure, not after someone goes down |
+| **Fewer incidents** | **Shifts are audited and flagged before crews arrive**, with safer windows proposed for manager approval rather than reacting after exposure |
 | **Compliance evidence** | A dated, reasoned heat assessment per shift — generated without extra admin |
 | **Less lost time** | **Partial-shift logic** preserves billable hours instead of cancelling whole days |
 | **Lower insurance/claims cost** | Documented diligence on the highest-fatality sector |
